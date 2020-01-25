@@ -7,6 +7,7 @@
 
 
 ### PLAN ###
+-Create an endpoint to crawl all the urls after some path (myshop.com/products etc...)
 -Create one endpoint which will receive text data with links and tags should scrapped.
 -Make this endpoint to parse json with : link, tags and their content, timestamp. 
 -Make register and auth endpoint. 

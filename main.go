@@ -1,8 +1,19 @@
 package main
 
-import "net/http"
+import (
+	"fmt"
+
+	"github.com/koshqua/scrapio/crawler"
+)
 
 func main() {
-
-	http.ListenAndServe(":3000", nil)
+	c := crawler.Crawler{StartURL: "https://edmundmartin.com/"}
+	l, err := c.CrawlPage(c.StartURL)
+	if err != nil {
+		fmt.Println(err)
+	}
+	for _, link := range l {
+		fmt.Println(link)
+	}
+	fmt.Println(c.Results)
 }
