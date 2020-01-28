@@ -1,19 +1,31 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/koshqua/scrapio/crawler"
 )
 
 func main() {
-	c := crawler.Crawler{StartURL: "https://edmundmartin.com/"}
-	l, err := c.CrawlPage(c.StartURL)
+	t := time.Now()
+	c := crawler.Crawler{StartURL: "http://www.greendeco.com.ua/"}
+	c.Crawl()
+	url, err := url.Parse(c.StartURL)
+
+	f, err := os.Create(strings.TrimPrefix(url.Hostname(), "www.") + ".json")
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 	}
-	for _, link := range l {
-		fmt.Println(link)
-	}
-	fmt.Println(c.Results)
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", " ")
+	err = enc.Encode(c.Results)
+	t2 := time.Now()
+	diff := t2.Sub(t)
+	fmt.Println(diff)
 }

@@ -26,12 +26,17 @@ type CrawlResult struct {
 
 //GetRequest ...
 func (c *Crawler) GetRequest(url string) (*goquery.Document, error) {
-	res, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("User-agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html")
+	client := http.Client{}
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	doc, err := goquery.NewDocumentFromResponse(res)
+	res.Body.Close()
 	return doc, nil
+
 }
 
 //ParseBase ...
@@ -45,8 +50,10 @@ func (c *Crawler) ParseBase() error {
 }
 
 func (c *Crawler) FormatRelative(urls map[string]int) (formatedUrls []string) {
-	c.ParseBase()
-	for url, _ := range urls {
+	if c.BaseURL == "" {
+		c.ParseBase()
+	}
+	for url := range urls {
 		if strings.HasPrefix(url, c.BaseURL) {
 			formatedUrls = append(formatedUrls, url)
 		}
@@ -58,31 +65,74 @@ func (c *Crawler) FormatRelative(urls map[string]int) (formatedUrls []string) {
 	return formatedUrls
 }
 
-//GetLinks..
+//GetLinks ...
 func (c *Crawler) GetLinks(doc *goquery.Document) []string {
+
 	foundLinks := make(map[string]int)
-	doc.Find("a").Each(func(i int, s *goquery.Selection) {
-		link, _ := s.Attr("href")
-		if _, ok := foundLinks[link]; !ok {
-			foundLinks[link] = 1
-		}
-	})
+	if doc != nil {
+		doc.Find("a").Each(func(i int, s *goquery.Selection) {
+			link, _ := s.Attr("href")
+			if _, ok := foundLinks[link]; !ok {
+				foundLinks[link] = 1
+			}
+		})
+	}
+
 	return c.FormatRelative(foundLinks)
 }
 
-func (c *Crawler) GetResult(doc *goquery.Document, url string) {
+//GetResult ...
+func (c *Crawler) GetResult(doc *goquery.Document, url string) CrawlResult {
 	cr := CrawlResult{}
 	cr.URL = url
-	cr.Title = doc.Find("title").Text()
-	c.Results = append(c.Results, cr)
+	if doc != nil {
+		cr.Title = doc.Find("title").Text()
+	}
+	return cr
 }
 
-func (c *Crawler) CrawlPage(url string) ([]string, error) {
+//CrawlPage ...
+func (c *Crawler) CrawlPage(url string) ([]string, CrawlResult, error) {
 	doc, err := c.GetRequest(url)
 	if err != nil {
-		return nil, err
+		return nil, CrawlResult{}, err
 	}
-	c.GetResult(doc, url)
+	cr := c.GetResult(doc, url)
 	links := c.GetLinks(doc)
-	return links, nil
+	return links, cr, nil
+}
+
+//Crawl ....
+func (c *Crawler) Crawl() {
+	results := make(chan CrawlResult)
+	worklist := make(chan []string)
+	seen := make(map[string]bool)
+	go func() { worklist <- []string{c.StartURL} }()
+	go func() {
+		for {
+			cr := <-results
+			c.Results = append(c.Results, cr)
+		}
+	}()
+	for n := 1; n > 0; n-- {
+		list := <-worklist
+		for _, link := range list {
+			if _, ok := seen[link]; !ok {
+				seen[link] = true
+				n++
+				go func(link string) {
+					links, cr, err := c.CrawlPage(link)
+					if err != nil {
+						fmt.Println(err)
+						return
+					}
+					fmt.Println(cr)
+					worklist <- links
+					results <- cr
+				}(link)
+
+			}
+		}
+	}
+
 }
