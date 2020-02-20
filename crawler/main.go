@@ -14,7 +14,7 @@ import (
 //Crawler defines a default crawler
 type Crawler struct {
 	BaseURL  string
-	StartURL string
+	StartURL string `json:"StartURL"`
 	Results  []CrawlResult
 }
 
