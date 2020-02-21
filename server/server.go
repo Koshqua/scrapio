@@ -29,23 +29,28 @@ type CrawlHandler struct {
 
 //CrawlHandler ...
 func (ch CrawlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	utils.CheckParse(err, w, "Bad request", http.StatusBadRequest)
-	ct := r.Header.Get("Content-Type")
-	crawler := new(crawler.Crawler)
-	switch {
-	case ct == "application/json":
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		utils.CheckParse(err, w, "Bad request", http.StatusBadRequest)
+		ct := r.Header.Get("Content-Type")
+		crawler := new(crawler.Crawler)
+		switch {
+		case ct == "application/json":
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			json.Unmarshal(body, crawler)
+		case ct == "application/x-www-form-urlencoded":
+			url := r.FormValue("StartURL")
+			crawler.StartURL = url
 		}
-		json.Unmarshal(body, crawler)
-	case ct == "application/x-www-form-urlencoded":
-		url := r.FormValue("StartURL")
-		crawler.StartURL = url
+		crawler.Crawl()
+		w.Header().Set("Content-Type", "application/json")
+		bs, err := json.Marshal(crawler.Results)
+		w.Write(bs)
+	} else {
+		http.Error(w, "Method should be post", http.StatusMethodNotAllowed)
 	}
-	crawler.Crawl()
-	w.Header().Set("Content-Type", "application/json")
-	bs, err := json.Marshal(crawler.Results)
-	w.Write(bs)
+
 }

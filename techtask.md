@@ -7,8 +7,8 @@
 
 
 ### PLAN ###
--Create an endpoint to crawl all the urls after some path (myshop.com/products etc...)
--Create one endpoint which will receive text data with links and tags should scrapped.
+-Create an endpoint to crawl all the urls after some path (myshop.com/products etc...) --DONE 
+-Create one endpoint which will receive json data with links and tags should scrapped.
 -Make this endpoint to parse json with : link, tags and their content, timestamp. 
 -Make register and auth endpoint. 
--Collect all the data about scrap request and result on db (Postgres)
+-Collect all the data about scrap request and result on db (Postgres/Mongo)
