@@ -13,15 +13,15 @@ import (
 
 //Crawler defines a default crawler
 type Crawler struct {
-	BaseURL  string
-	StartURL string `json:"StartURL"`
-	Results  []CrawlResult
+	BaseURL  string        `json:"BaseURL"`
+	StartURL string        `json:"StartURL"`
+	Results  []CrawlResult `json:"Results"`
 }
 
-//CrawlResults ...
+//CrawlResult ...
 type CrawlResult struct {
-	URL   string
-	Title string
+	URL   string `json:"URL"`
+	Title string `json:"Title"`
 }
 
 //GetRequest ...
@@ -49,6 +49,7 @@ func (c *Crawler) ParseBase() error {
 	return nil
 }
 
+//FormatRelative ...
 func (c *Crawler) FormatRelative(urls map[string]int) (formatedUrls []string) {
 	if c.BaseURL == "" {
 		c.ParseBase()
