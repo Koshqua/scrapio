@@ -13,6 +13,7 @@ import (
 
 //Crawler defines a default crawler
 type Crawler struct {
+	ID       string        `json:"ID"`
 	BaseURL  string        `json:"BaseURL"`
 	StartURL string        `json:"StartURL"`
 	Results  []CrawlResult `json:"Results"`

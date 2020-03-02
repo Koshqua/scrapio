@@ -9,41 +9,96 @@ import (
 	"github.com/koshqua/scrapio/crawler"
 )
 
-//Scraper represents default scraper
-type Scraper struct {
-	StartURL string
-	BaseURL  string
-	Pages    map[string]map[string][]string
+//ScrapResult ...
+type ScrapResult struct {
+	Text     string
+	LinkURL  string
+	ImageURL string
 }
 
-//InitScraper creates a basic scraper from Crawler
-func (s *Scraper) InitScraper(c crawler.Crawler) {
+//Selector ...
+type Selector struct {
+	Name        string `json:"Name"`
+	ScrapText   bool   `json:"ScrapText"`
+	ScrapLinks  bool   `json:"ScrapLinks"`
+	ScrapImages bool   `json:"ScrapImages"`
+	ScrapResult
+}
+
+//Page ...
+type Page struct {
+	URL       string
+	Selectors []Selector
+}
+
+//Scraper represents default scraper
+type Scraper struct {
+	ID      string
+	BaseURL string
+	Pages   []Page
+}
+
+//parseScraper creates a basic scraper from Crawler
+func parseScraper(c crawler.Crawler) *Scraper {
+	s := &Scraper{}
 	s.BaseURL = c.BaseURL
-	s.StartURL = c.StartURL
 	for _, result := range c.Results {
-		s.Pages[result.URL] = map[string][]string{}
+		s.Pages = append(s.Pages, Page{URL: result.URL})
+	}
+	return s
+}
+
+func (s *Scraper) addSelectors(selectors []Selector) {
+	for _, page := range s.Pages {
+		page.Selectors = append(page.Selectors, selectors...)
 	}
 }
 
-//ScrapPageText scraps single page ...
-func ScrapPageText(selectors []string, url string) (map[string][]string, error) {
-	results := make(map[string][]string)
-	res, err := http.Get(url)
+//InitScraper creates a Scraper with selectors attached to it
+func InitScraper(c crawler.Crawler, s []Selector) *Scraper {
+	scraper := parseScraper(c)
+	scraper.addSelectors(s)
+	return scraper
+}
+
+func scrapPage(p Page) error {
+	res, err := http.Get(p.URL)
 	if err != nil {
-		return results, err
+		return err
 	}
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		return results, err
+		return err
 	}
 	defer res.Body.Close()
-	for _, selector := range selectors {
-		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
-			content := s.Text()
-			results[selector] = append(results[selector], content)
-		})
+	for _, selector := range p.Selectors {
+		if selector.ScrapImages {
+			scrapPageImage(doc, &selector)
+		}
+		if selector.ScrapLinks {
+			scrapPageLinks(doc, &selector)
+		}
+		if selector.ScrapText {
+			scrapPageText(doc, &selector)
+		}
 	}
-	return results, nil
+	return nil
+}
+
+//ScrapPageText scraps single page ...
+func scrapPageText(doc *goquery.Document, selector *Selector) {
+	selection := doc.Find(selector.Name).First()
+	selector.Text = selection.Text()
+}
+
+func scrapPageImage(doc *goquery.Document, selector *Selector) {
+	selection := doc.Find(selector.Name).First()
+	selector.ImageURL, _ = selection.Attr("src")
+}
+func scrapPageLinks(doc *goquery.Document, selector *Selector) {
+	selection := doc.Find(selector.Name).First()
+	selector.LinkURL, _ = selection.Attr("href")
+
 }
 
 func parseCrawler(j []byte) (crawler.Crawler, error) {
