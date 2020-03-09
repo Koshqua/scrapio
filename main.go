@@ -1,14 +1,33 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
+	"log"
 
-	"github.com/koshqua/scrapio/server"
+	"github.com/koshqua/scrapio/crawler"
+	"github.com/koshqua/scrapio/scraper"
 )
 
 func main() {
-	http.Handle("/crawl", server.CrawlHandler{})
-	fmt.Println("Server is started")
-	http.ListenAndServe(":3000", nil)
+	cr := &crawler.Crawler{StartURL: "https://adnanahmed.info/"}
+	cr.Crawl()
+	selectors := scraper.Selector{
+		"figure img",
+		true,
+		true,
+		true,
+		scraper.ScrapResult{},
+	}
+	sc := scraper.InitScraper(*cr, []scraper.Selector{selectors})
+	err := sc.Scrap()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	js, err := json.Marshal(*sc)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(js))
+
 }

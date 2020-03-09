@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -28,14 +29,14 @@ type Selector struct {
 //Page ...
 type Page struct {
 	URL       string
-	Selectors []Selector
+	Selectors []*Selector
 }
 
 //Scraper represents default scraper
 type Scraper struct {
 	ID      string
 	BaseURL string
-	Pages   []Page
+	Pages   []*Page
 }
 
 //parseScraper creates a basic scraper from Crawler
@@ -43,14 +44,16 @@ func parseScraper(c crawler.Crawler) *Scraper {
 	s := &Scraper{}
 	s.BaseURL = c.BaseURL
 	for _, result := range c.Results {
-		s.Pages = append(s.Pages, Page{URL: result.URL})
+		s.Pages = append(s.Pages, &Page{URL: result.URL})
 	}
 	return s
 }
 
 func (s *Scraper) addSelectors(selectors []Selector) {
 	for _, page := range s.Pages {
-		page.Selectors = append(page.Selectors, selectors...)
+		for _, s := range selectors {
+			page.Selectors = append(page.Selectors, &s)
+		}
 	}
 }
 
@@ -61,7 +64,16 @@ func InitScraper(c crawler.Crawler, s []Selector) *Scraper {
 	return scraper
 }
 
-func scrapPage(p Page) error {
+func (s *Scraper) Scrap() error {
+	for _, page := range s.Pages {
+		err := scrapPage(page)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func scrapPage(p *Page) error {
 	res, err := http.Get(p.URL)
 	if err != nil {
 		return err
@@ -73,13 +85,13 @@ func scrapPage(p Page) error {
 	defer res.Body.Close()
 	for _, selector := range p.Selectors {
 		if selector.ScrapImages {
-			scrapPageImage(doc, &selector)
+			scrapPageImage(doc, selector)
 		}
 		if selector.ScrapLinks {
-			scrapPageLinks(doc, &selector)
+			scrapPageLinks(doc, selector)
 		}
 		if selector.ScrapText {
-			scrapPageText(doc, &selector)
+			scrapPageText(doc, selector)
 		}
 	}
 	return nil
@@ -93,6 +105,8 @@ func scrapPageText(doc *goquery.Document, selector *Selector) {
 
 func scrapPageImage(doc *goquery.Document, selector *Selector) {
 	selection := doc.Find(selector.Name).First()
+	url, _ := selection.Attr("src")
+	fmt.Println(url)
 	selector.ImageURL, _ = selection.Attr("src")
 }
 func scrapPageLinks(doc *goquery.Document, selector *Selector) {
