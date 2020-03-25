@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html"
 )
 
 //Package crawler defines all the functionality for page crawling
@@ -28,13 +29,21 @@ type CrawlResult struct {
 //GetRequest ...
 func (c *Crawler) GetRequest(url string) (*goquery.Document, error) {
 	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("User-agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html")
 	client := http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	doc, err := goquery.NewDocumentFromResponse(res)
+	defer res.Body.Close()
+	html, err := html.Parse(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	doc := goquery.NewDocumentFromNode(html)
 	res.Body.Close()
 	return doc, nil
 
@@ -116,6 +125,7 @@ func (c *Crawler) Crawl() {
 			c.Results = append(c.Results, cr)
 		}
 	}()
+
 	for n := 1; n > 0; n-- {
 		list := <-worklist
 		for _, link := range list {

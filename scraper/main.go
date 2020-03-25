@@ -3,8 +3,10 @@ package scraper
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/koshqua/scrapio/crawler"
@@ -52,6 +54,7 @@ func parseScraper(c crawler.Crawler) *Scraper {
 func (s *Scraper) addSelectors(selectors []Selector) {
 	for _, page := range s.Pages {
 		for _, s := range selectors {
+			s := s
 			page.Selectors = append(page.Selectors, &s)
 		}
 	}
@@ -65,25 +68,66 @@ func InitScraper(c crawler.Crawler, s []Selector) *Scraper {
 }
 
 func (s *Scraper) Scrap() error {
+	wg := sync.WaitGroup{}
+	pageChan := make(chan *Page, len(s.Pages))
+	resultChan := make(chan *Page, len(s.Pages))
 	for _, page := range s.Pages {
-		err := scrapPage(page)
-		if err != nil {
-			return err
-		}
+		page := page
+		fmt.Println("Transfering page", page.URL)
+		pageChan <- page
 	}
+
+	counter := len(s.Pages)
+	s.Pages = []*Page{}
+	fmt.Println("Cleared all the pages from struct")
+
+	go func() {
+		wg.Add(1)
+		for n := 0; n < counter; {
+			page := <-resultChan
+			fmt.Println("Put result page", page.URL)
+			s.Pages = append(s.Pages, page)
+			n++
+		}
+		wg.Done()
+	}()
+	for n := 0; n < counter; {
+		page := <-pageChan
+		n++
+		fmt.Println("Scraping loop", n)
+		go func() {
+			page := page
+			fmt.Println(page.URL, "Got from chanel")
+			fmt.Println("Scraping page", page.URL)
+			p, err := scrapPage(page)
+			if err != nil {
+				log.Fatalln(err)
+				return
+			}
+			resultChan <- p
+
+		}()
+
+	}
+	wg.Wait()
+
 	return nil
 }
-func scrapPage(p *Page) error {
-	res, err := http.Get(p.URL)
+func scrapPage(p *Page) (*Page, error) {
+	page := p
+	fmt.Println("MADE REQ TO ", page.URL)
+	res, err := http.Get(page.URL)
+	fmt.Println("FINISHED REQ TO", page.URL)
 	if err != nil {
-		return err
+		return page, err
 	}
 	doc, err := goquery.NewDocumentFromReader(res.Body)
+
 	if err != nil {
-		return err
+		return page, err
 	}
 	defer res.Body.Close()
-	for _, selector := range p.Selectors {
+	for _, selector := range page.Selectors {
 		if selector.ScrapImages {
 			scrapPageImage(doc, selector)
 		}
@@ -94,7 +138,8 @@ func scrapPage(p *Page) error {
 			scrapPageText(doc, selector)
 		}
 	}
-	return nil
+	fmt.Println("scrapped page", page.URL)
+	return page, nil
 }
 
 //ScrapPageText scraps single page ...
@@ -105,8 +150,6 @@ func scrapPageText(doc *goquery.Document, selector *Selector) {
 
 func scrapPageImage(doc *goquery.Document, selector *Selector) {
 	selection := doc.Find(selector.Name).First()
-	url, _ := selection.Attr("src")
-	fmt.Println(url)
 	selector.ImageURL, _ = selection.Attr("src")
 }
 func scrapPageLinks(doc *goquery.Document, selector *Selector) {
@@ -128,4 +171,14 @@ func parseSelectors(s string) []string {
 	var selArr []string
 	selArr = strings.Split(s, ", ")
 	return selArr
+}
+
+func NewSelector(name string, scrapPageImages bool, scrapPageLinks bool, scrapPageText bool) Selector {
+	s := Selector{
+		Name:        name,
+		ScrapImages: scrapPageImages,
+		ScrapLinks:  scrapPageLinks,
+		ScrapText:   scrapPageText,
+	}
+	return s
 }
