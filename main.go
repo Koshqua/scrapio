@@ -15,7 +15,7 @@ func main() {
 	start := time.Now()
 	cr := &crawler.Crawler{StartURL: "https://gulfnews.com/"}
 	startCrawling := time.Now()
-	cr.Crawl(2000)
+	cr.Crawl()
 	finishCrawling := time.Now()
 	h2 := scraper.NewSelector("h2", true, true, true)
 	img := scraper.NewSelector("img", true, true, true)
@@ -23,6 +23,9 @@ func main() {
 	sc := scraper.InitScraper(*cr, []scraper.Selector{h2, img, p})
 	startScrap := time.Now()
 	err := sc.Scrap()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	finishScrap := time.Now()
 	finish := time.Now()
 
