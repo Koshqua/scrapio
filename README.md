@@ -1,3 +1,11 @@
+### Scrapio 
+**Scrapio** - is a lightweight and user-friendy web crawling and scraping library. 
+The main goal of creating the project was to make scraping big amounts of similar data from web easy and user-friendly.
+After some time, I am going to make it a standalone service, which will work as an API.
+BTW, at the moment I'm looking for a front-end developer, who'd like to commit.
+If you are the one, you can email me on maliovaniy.ivan@gmail.com
+
+
 ### Progress and some user guide.
 At the moment works as a library which can be used to crawl and scrap data from web. 
 What it can do:
