@@ -1,13 +1,13 @@
 package crawler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html"
 )
 
 //Package crawler defines all the functionality for page crawling
@@ -26,6 +26,8 @@ type CrawlResult struct {
 	Title string `json:"Title"`
 }
 
+var errTimeOut = errors.New("Connection timed out")
+
 //GetRequest ...
 func (c *Crawler) GetRequest(url string) (*goquery.Document, error) {
 	req, err := http.NewRequest("GET", url, nil)
@@ -35,16 +37,16 @@ func (c *Crawler) GetRequest(url string) (*goquery.Document, error) {
 	req.Header.Add("User-agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html")
 	client := http.Client{}
 	res, err := client.Do(req)
-	if err != nil {
+	if res.StatusCode == http.StatusGatewayTimeout || res.StatusCode == http.StatusRequestTimeout {
+		return nil, errTimeOut
+	} else if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-	html, err := html.Parse(res.Body)
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		return nil, err
 	}
-	doc := goquery.NewDocumentFromNode(html)
-	res.Body.Close()
 	return doc, nil
 
 }
@@ -78,7 +80,6 @@ func (c *Crawler) FormatRelative(urls map[string]int) (formatedUrls []string) {
 
 //GetLinks ...
 func (c *Crawler) GetLinks(doc *goquery.Document) []string {
-
 	foundLinks := make(map[string]int)
 	if doc != nil {
 		doc.Find("a").Each(func(i int, s *goquery.Selection) {
@@ -114,7 +115,8 @@ func (c *Crawler) CrawlPage(url string) ([]string, CrawlResult, error) {
 }
 
 //Crawl ....
-func (c *Crawler) Crawl() {
+func (c *Crawler) Crawl() error {
+	errChan := make(chan error)
 	results := make(chan CrawlResult)
 	worklist := make(chan []string)
 	seen := make(map[string]bool)
@@ -130,21 +132,29 @@ func (c *Crawler) Crawl() {
 		list := <-worklist
 		for _, link := range list {
 			if _, ok := seen[link]; !ok {
-				seen[link] = true
-				n++
-				go func(link string) {
-					links, cr, err := c.CrawlPage(link)
-					if err != nil {
-						fmt.Println(err)
-						return
+				select {
+				case <-errChan:
+					err := <-errChan
+					if err == errTimeOut {
+						return err
 					}
-					fmt.Println(cr)
-					worklist <- links
-					results <- cr
-				}(link)
+				default:
+					seen[link] = true
+					n++
+					go func(link string) {
+						links, cr, err := c.CrawlPage(link)
+						if err != nil {
+							errChan <- err
+							return
+						}
+						fmt.Println(cr)
+						worklist <- links
+						results <- cr
+					}(link)
+				}
 
 			}
 		}
 	}
-
+	return nil
 }
