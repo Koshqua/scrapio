@@ -22,7 +22,6 @@ func ExampleCrawl() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 }
 
 func BenchmarkCrawl(b *testing.B) {

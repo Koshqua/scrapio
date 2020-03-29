@@ -48,10 +48,4 @@ Selectors are the simple css-like selectors.
 	}
 ```
 
-### FEATURES ###
-- Should work as an api
-- Should be able to scrap data from web pages by link or by a list of links. 
-- Should scrap data from elements by css selectors. 
-- Should parse a json or csv table with results (preferably json).
-- Should have an authentication.
 
