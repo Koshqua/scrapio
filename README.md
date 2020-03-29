@@ -1,12 +1,13 @@
-### Scrapio 
+## Scrapio 
+
 **Scrapio** - is a lightweight and user-friendy web crawling and scraping library. 
-The main goal of creating the project was to make scraping big amounts of similar data from web easy and user-friendly.
+The main goal of creating the project was to make scraping big amounts of similar data from web easy and user-friendly. It might be useful for wide range of applications, like data mining, data processing and archiving. 
 After some time, I am going to make it a standalone service, which will work as an API.
-BTW, at the moment I'm looking for a front-end developer, who'd like to commit.
-If you are the one, you can email me on maliovaniy.ivan@gmail.com
 
 
-### Progress and some user guide.
+
+
+### Features
 At the moment works as a library which can be used to crawl and scrap data from web. 
 What it can do:
 - Crawl all pages on host, return all the links. 
@@ -16,7 +17,7 @@ What it can do:
 - Written in go, concurrent, depending on Network Speed can crawl and scrap up to 2k pages/minute.
 
 ### Usage 
-- Crawler 
+Crawler is easy to use. You just need to specify a starting URL and it will crawl all the URL on the host. 
 ```go 
     //init a new crawler, give it a start url, it's not necessary should be basic URL
     cr := &crawler.Crawler{StartURL: "https://gulfnews.com/"}

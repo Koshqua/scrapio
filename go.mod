@@ -3,6 +3,6 @@ module github.com/koshqua/scrapio
 go 1.13
 
 require (
-	github.com/PuerkitoBio/goquery v1.5.1
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	github.com/koshqua/scrapio/crawler v0.0.0-20200329094623-dc925c17d5ac
+	github.com/koshqua/scrapio/scraper v0.0.0-20200329094623-dc925c17d5ac
 )
