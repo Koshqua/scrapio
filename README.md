@@ -1,6 +1,6 @@
 
 [![GoDoc](https://godoc.org/github.com/koshqua/scrapio?status.svg)](https://pkg.go.dev/github.com/koshqua/scrapio)
-[![GoDoc](https://godoc.org/github.com/koshqua/scrapio?status.svg)](https://pkg.go.dev/github.com/koshqua/scrapio)
+
 ## Scrapio 
 
 **Scrapio** - is a lightweight and user-friendy web crawling and scraping library. 
@@ -20,7 +20,7 @@ What it can do:
 - Written in go, concurrent, depending on Network Speed can crawl and scrap up to 2k pages/minute.
 
 ### Usage 
-Crawler is easy to use. You just need to specify a starting URL and it will crawl all the URL on the host. 
+**Crawler** is easy to use. You just need to specify a starting URL and it will crawl all the URL on the host. 
 ```go 
     //init a new crawler, give it a start url, it's not necessary should be basic URL
     cr := &crawler.Crawler{StartURL: "https://gulfnews.com/"}
@@ -29,11 +29,13 @@ Crawler is easy to use. You just need to specify a starting URL and it will craw
     cr.Crawl()
     //Do something with result, it's up to you
 ```
-- Scraper 
+**Scraper** uses data structure given by crawler. 
+Before initiating a scraper, you need to create a few selectors, to assign them to scraper.
+Selectors are the simple css-like selectors.  
 ```go
     //create some Selectors, which you want to scrap.
     h2 := scraper.NewSelector("h2", true, true, true)
-	img := scraper.NewSelector("img", true, true, true)
+    img := scraper.NewSelector("img", true, true, true)
     p := scraper.NewSelector("p:first-of-type", true, true, true)
     //Initiate a new scrapper with given selectors
     //Scraper depends on the crawler from previous code snippet.
