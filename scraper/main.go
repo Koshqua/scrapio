@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -73,19 +72,16 @@ func (s *Scraper) Scrap() error {
 	resultChan := make(chan *Page, len(s.Pages))
 	for _, page := range s.Pages {
 		page := page
-		fmt.Println("Transfering page", page.URL)
 		pageChan <- page
 	}
 
 	counter := len(s.Pages)
 	s.Pages = []*Page{}
-	fmt.Println("Cleared all the pages from struct")
 
 	go func() {
 		wg.Add(1)
 		for n := 0; n < counter; {
 			page := <-resultChan
-			fmt.Println("Put result page", page.URL)
 			s.Pages = append(s.Pages, page)
 			n++
 		}
@@ -94,11 +90,8 @@ func (s *Scraper) Scrap() error {
 	for n := 0; n < counter; {
 		page := <-pageChan
 		n++
-		fmt.Println("Scraping loop", n)
 		go func() {
 			page := page
-			fmt.Println(page.URL, "Got from chanel")
-			fmt.Println("Scraping page", page.URL)
 			p, err := scrapPage(page)
 			if err != nil {
 				log.Fatalln(err)
@@ -115,9 +108,7 @@ func (s *Scraper) Scrap() error {
 }
 func scrapPage(p *Page) (*Page, error) {
 	page := p
-	fmt.Println("MADE REQ TO ", page.URL)
 	res, err := http.Get(page.URL)
-	fmt.Println("FINISHED REQ TO", page.URL)
 	if err != nil {
 		return page, err
 	}
@@ -138,7 +129,6 @@ func scrapPage(p *Page) (*Page, error) {
 			scrapPageText(doc, selector)
 		}
 	}
-	fmt.Println("scrapped page", page.URL)
 	return page, nil
 }
 
