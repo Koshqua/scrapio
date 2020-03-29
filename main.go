@@ -11,6 +11,7 @@ import (
 
 func main() {
 	cr := &crawler.Crawler{StartURL: "https://blog.merovius.de/"}
+	cr.PagesLimit = 11
 	cr.Crawl()
 	h2 := scraper.NewSelector("p:nth-of-type(2)", true, true, true)
 	img := scraper.NewSelector("figure img", true, true, true)

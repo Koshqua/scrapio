@@ -77,9 +77,9 @@ func (s *Scraper) Scrap() error {
 
 	counter := len(s.Pages)
 	s.Pages = []*Page{}
-
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
+
 		for n := 0; n < counter; {
 			page := <-resultChan
 			s.Pages = append(s.Pages, page)
@@ -89,6 +89,7 @@ func (s *Scraper) Scrap() error {
 	}()
 	for n := 0; n < counter; {
 		page := <-pageChan
+		wg.Add(1)
 		n++
 		go func() {
 			page := page
@@ -100,6 +101,7 @@ func (s *Scraper) Scrap() error {
 			resultChan <- p
 
 		}()
+		wg.Done()
 
 	}
 	wg.Wait()

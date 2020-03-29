@@ -13,10 +13,11 @@ import (
 
 //Crawler defines a default crawler
 type Crawler struct {
-	ID       string        `json:"ID"`
-	BaseURL  string        `json:"BaseURL"`
-	StartURL string        `json:"StartURL"`
-	Results  []CrawlResult `json:"Results"`
+	ID         string        `json:"ID"`
+	BaseURL    string        `json:"BaseURL"`
+	StartURL   string        `json:"StartURL"`
+	PagesLimit int           `json:"PagesLimit"`
+	Results    []CrawlResult `json:"Results"`
 }
 
 //CrawlResult defines the result of crawled single page.
@@ -43,7 +44,11 @@ func (c *Crawler) Crawl() error {
 
 	for n := 1; n > 0; n-- {
 		list := <-worklist
+
 		for _, link := range list {
+			if len(c.Results) >= c.PagesLimit {
+				return nil
+			}
 			if _, ok := seen[link]; !ok {
 				select {
 				case <-errChan:
