@@ -1,3 +1,6 @@
+
+[![GoDoc](https://godoc.org/github.com/koshqua/scrapio?status.svg)](https://pkg.go.dev/github.com/koshqua/scrapio)
+[![GoDoc](https://godoc.org/github.com/koshqua/scrapio?status.svg)](https://pkg.go.dev/github.com/koshqua/scrapio)
 ## Scrapio 
 
 **Scrapio** - is a lightweight and user-friendy web crawling and scraping library. 
