@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="/assets/styles.css" rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <h1>Welcome to scrapio API </h1>
+    <p>Later I will represent some more information about usage</p>
+    <form method='POST' action ='/crawl' class='crawl_form'>
+        <h2> Send a simple crawl request </h2>
+        <input type='text' name='start_url' placeholder='Type url to start scraping'>
+        <label for="limit">There is an option to limit quantity of result pages </label>
+        <input type='number' name='limit'>
+        <button type='submit'>Crawl!</button>
+    </form>
+</body>
+</html>

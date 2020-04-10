@@ -1,0 +1,26 @@
+h1, p, .crawl_form, .crawl_form label, h2 {
+    margin: 0 auto;
+    max-width: 50%;
+    text-align: center;
+    color: white;
+
+}
+body{
+    background-color: #333333;
+
+}
+.crawl_form h2{
+    margin-bottom: 20px;
+}
+.crawl_form{
+   color: black;
+   margin-top: 30px;
+   border: 1px solid white;
+   padding: 30px;
+}
+.crawl_form input, .crawl_form label{
+    display: block;
+    margin: 0 auto;
+    font-size: 15px;
+    margin-top: 10px;
+}
