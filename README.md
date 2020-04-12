@@ -7,6 +7,8 @@
 The main goal of creating the project was to make scraping big amounts of similar data from web easy and user-friendly. It might be useful for wide range of applications, like data mining, data processing and archiving. 
 After some time, I am going to make it a standalone service, which will work as an API.
 
+### Installation 
+
 
 
 
@@ -18,9 +20,15 @@ What it can do:
 - It leaves the choice of data output(csv,json, etc) up to you. 
 - It's free and quite powerful. 
 - Written in go, concurrent, depending on Network Speed can crawl and scrap up to 2k pages/minute.
+  
+### Installation 
+```
+go get github.com/koshqua/scrapio 
+```
 
 ### Usage 
-**Crawler** is easy to use. You just need to specify a starting URL and it will crawl all the URL on the host. 
+**Crawler** is easy to use. You just need to specify a starting URL and it will crawl all the URL on the host.
+
 ```go 
     //init a new crawler, give it a start url, it's not necessary should be basic URL
     cr := &crawler.Crawler{StartURL: "https://gulfnews.com/"}

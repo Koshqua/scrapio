@@ -46,7 +46,7 @@ func (c *Crawler) Crawl() error {
 		list := <-worklist
 
 		for _, link := range list {
-			if len(c.Results) >= c.PagesLimit {
+			if len(c.Results) >= c.PagesLimit && c.PagesLimit != 0 {
 				return nil
 			}
 			if _, ok := seen[link]; !ok {
