@@ -32,10 +32,16 @@ func main() {
 }
 func CrawlHandler(res http.ResponseWriter, req *http.Request, param httprouter.Params) {
 	url := req.FormValue("start_url")
-	limit, err := strconv.Atoi(req.FormValue("limit"))
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+	lim := req.FormValue("limit")
+	var limit int
+	var err error
+	if lim != "" {
+		limit, err = strconv.Atoi(lim)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusBadRequest)
+		}
 	}
+
 	c := crawler.Crawler{StartURL: url}
 	c.PagesLimit = limit
 	err = c.Crawl()
