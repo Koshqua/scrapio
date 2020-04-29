@@ -1,4 +1,5 @@
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/66c67645f9fd404bbf47a3f443ecba5c)](https://app.codacy.com/manual/Koshqua/scrapio?utm_source=github.com&utm_medium=referral&utm_content=Koshqua/scrapio&utm_campaign=Badge_Grade_Dashboard)
 [![GoDoc](https://godoc.org/github.com/koshqua/scrapio?status.svg)](https://pkg.go.dev/github.com/koshqua/scrapio)
 
 ## Scrapio 
