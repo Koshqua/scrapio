@@ -1,5 +1,6 @@
 
 [![GoDoc](https://godoc.org/github.com/koshqua/scrapio?status.svg)](https://pkg.go.dev/github.com/koshqua/scrapio)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Koshqua/scrapio)](https://goreportcard.com/report/github.com/Koshqua/scrapio)
 
 ## Scrapio 
 
